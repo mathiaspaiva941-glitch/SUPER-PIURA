@@ -1,0 +1,6 @@
+{
+  "name": "Super Piura Bros: El Fenómeno del Niño",
+  "description": "Juego retro de plataformas estilo Mario Bros ambientado en el norte del Perú durante el Fenómeno del Niño. Corre, salta, esquiva huaicos y vence a los jefes de tormenta mejorando a tu personaje.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

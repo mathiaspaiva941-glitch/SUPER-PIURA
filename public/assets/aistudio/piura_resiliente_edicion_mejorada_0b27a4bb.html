@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#10243a">
+<title>Piura Resiliente — Edición Mejorada</title>
+<style>
+:root{--gold:#ffd66b;--navy:#10243a;--panel:#173d59;--mint:#8ee0c1;--cream:#fff7df}
+*{box-sizing:border-box}
+body{margin:0;color:#f7f5e9;font-family:ui-monospace,Consolas,monospace;background:radial-gradient(ellipse at top,#285d79 0,#10243a 58%,#081522 100%)}
+button{font:700 14px ui-monospace,Consolas,monospace;color:white;background:#245d80;border:2px solid #8ed6e7;border-radius:9px;padding:10px 14px;cursor:pointer;touch-action:manipulation}
+button:hover:not(:disabled){filter:brightness(1.17);transform:translateY(-1px)}
+button:disabled{opacity:.42;cursor:not-allowed}
+.primary{background:#a65b2b;border-color:#ffe09a}.gold{background:#876019;border-color:#ffdf80}.ghost{background:#18344b;border-color:#668da4}
+header{max-width:1100px;margin:auto;padding:15px 12px 7px;text-align:center}
+h1{font-size:clamp(22px,4vw,35px);margin:0;color:var(--gold);letter-spacing:1px;text-shadow:3px 3px #633d27}
+.tagline{font-size:11px;color:#c8e1ec;margin:5px 0 12px}
+.hud{display:flex;justify-content:center;gap:7px;flex-wrap:wrap}
+.stat{background:#173b56;border:1px solid #5595b1;border-radius:8px;padding:7px 10px;font-size:11px}
+.stat b{color:var(--gold);font-size:14px}
+main{width:min(100%,1020px);margin:auto;padding:0 10px}
+.game-shell{position:relative}
+canvas{display:block;width:100%;height:auto;aspect-ratio:16/9;border:4px solid #f4d47b;border-radius:10px;background:#8bd4ed;image-rendering:pixelated;box-shadow:0 15px 38px #0008}
+.canvas-label{position:absolute;top:10px;left:12px;background:#0e263be8;border:1px solid #ffffff55;border-radius:6px;padding:6px 9px;font-size:11px;pointer-events:none}
+#toast{min-height:26px;text-align:center;color:#ffe69b;font-size:12px;padding:6px}
+.controls,.toolbar{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;margin:7px 0}
+.controls button{min-width:68px;padding:12px 16px;font-size:17px}
+.controls .jump{background:#94502c;border-color:#ffdf91;min-width:105px}
+.controls .interact{background:#27735f;border-color:#a6e9c8}
+.hint,footer{text-align:center;color:#bdd4e3;font-size:10px;line-height:1.5;margin:8px 0 15px}
+.overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:#061421ef;z-index:20;padding:14px}
+.panel{width:min(760px,96vw);max-height:92vh;overflow:auto;background:linear-gradient(145deg,#1b4663,#102a40);border:2px solid var(--gold);border-radius:16px;padding:18px;box-shadow:0 18px 60px #000b}
+.panel h2{color:var(--gold);margin:0 0 8px;font-size:21px}.panel p{color:#d6e8ef;font-size:12px;line-height:1.55}
+.paneltop{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:10px;margin:14px 0}
+.card{background:#0e2a40;border:1px solid #5e9bb4;border-radius:10px;padding:12px;text-align:left}
+.card h3{font-size:13px;color:#ffe19a;margin:4px 0}.card p{font-size:11px;min-height:34px;margin:6px 0;color:#c9dce7}.price{color:var(--mint);font-size:12px;font-weight:bold;margin:7px 0}.card button{width:100%;padding:8px;font-size:12px}
+#levelGrid{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;margin:12px 0}.levelcell{padding:7px 2px;border-radius:5px;background:#0c263b;border:1px solid #517e97;font-size:10px}.levelcell.done{background:#28684f;border-color:#8bd7a7}.levelcell.now{background:#8b611f;border-color:#ffe18a}
+.progress{height:9px;background:#092034;border-radius:10px;overflow:hidden;margin:9px 0}.progress span{display:block;height:100%;background:linear-gradient(90deg,#6bcba5,#ffda75);width:0}
+#startScreen{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;padding:14px;background:linear-gradient(120deg,#081a2bf2,#123e58f2)}
+.startbox{width:min(790px,96vw);max-height:94vh;overflow:auto;background:linear-gradient(145deg,#194563,#102a40);border:3px solid var(--gold);border-radius:18px;padding:clamp(16px,4vw,28px);box-shadow:0 20px 70px #000b;text-align:center}
+.startbox h2{font-size:clamp(25px,5vw,42px);color:var(--gold);margin:5px;text-shadow:3px 3px #70452b}
+.lead{font-size:13px;line-height:1.6;color:#e1f0f4;max-width:650px;margin:10px auto}
+.features,.characters{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:12px 0}
+.feature{background:#0d2b42;border:1px solid #5d9cb5;border-radius:8px;padding:8px;font-size:10px}
+.charcard{width:140px;background:#102e46;border:2px solid #5a8fa8;border-radius:10px;padding:8px;cursor:pointer}
+.charcard.selected{border-color:var(--gold);background:#31516a}
+.charcard canvas{width:70px;height:80px;border:0;box-shadow:none;margin:auto;background:transparent}
+.charcard b{display:block;color:#ffe29a;font-size:12px;margin:4px}.charcard small{color:#c6dbe5;font-size:9px}
+@media(max-width:540px){.stat{font-size:9px;padding:6px}.stat b{font-size:12px}.panel{padding:13px}.charcard{width:44%}.toolbar button{font-size:10px;padding:8px}.hint{font-size:9px}}
+</style>
+</head>
+<body>
+<header>
+ <h1>🌊 PIURA RESILIENTE 🌴</h1>
+ <div class="tagline">EDICIÓN MEJORADA · 100 MISIONES PARA PROTEGER EL NORTE DEL PERÚ</div>
+ <div class="hud">
+  <div class="stat">🧭 NIVEL <b id="uiLevel">1</b>/100</div>
+  <div class="stat">🪙 MONEDAS <b id="uiCoins">0</b></div>
+  <div class="stat">❤️ VIDAS <b id="uiLives">3</b></div>
+  <div class="stat">🎒 AYUDA <b id="uiSupplies">0</b>/3</div>
+  <div class="stat">⭐ RÉCORD <b id="uiBest">1</b></div>
+ </div>
+</header>
+<main>
+ <div class="game-shell"><canvas id="game" width="960" height="540"></canvas><div class="canvas-label" id="zoneLabel">ZONA 1 · PIURA</div></div>
+ <div id="toast">Recoge tres paquetes de ayuda y llega al refugio.</div>
+ <div class="controls">
+  <button id="leftBtn">◀</button><button id="jumpBtn" class="jump">⬆ SALTAR</button><button id="rightBtn">▶</button><button id="actionBtn" class="interact" style="display:none">⚡ ACTIVAR FARO</button>
+ </div>
+ <div class="toolbar">
+  <button id="shopBtn" class="gold">🛒 TIENDA</button><button id="mapBtn" class="ghost">🗺️ MAPA</button><button id="pauseBtn" class="ghost">⏸ PAUSA</button><button id="restartBtn" class="ghost">↻ REINICIAR</button><button id="soundBtn" class="ghost">🔊 SONIDO: SÍ</button><button id="helpBtn2" class="ghost">❔ AYUDA</button>
+ </div>
+ <div class="hint">PC: A/D o flechas para moverte · ESPACIO para saltar · E para activar el faro · En celular usa los botones.</div>
+</main>
+<footer>Juego educativo ficticio. En una emergencia real, evita cruzar ríos o quebradas crecidas y sigue las indicaciones de las autoridades.</footer>
+
+<div class="overlay" id="shopOverlay"><div class="panel"><div class="paneltop"><h2>🛒 TIENDA DE LA BRIGADA</h2><button class="ghost close" data-close="shopOverlay">✕</button></div><p>Compra equipo con las monedas que encuentres. Las mejoras permanentes se conservan entre niveles.</p><p>Saldo: 🪙 <b id="shopBalance">0</b></p><div class="grid" id="shopGrid"></div></div></div>
+<div class="overlay" id="mapOverlay"><div class="panel"><div class="paneltop"><h2>🗺️ MAPA DE LAS 100 MISIONES</h2><button class="ghost close" data-close="mapOverlay">✕</button></div><p>Tu avance se guarda automáticamente en este navegador.</p><div class="progress"><span id="mapProgress"></span></div><p id="mapCaption"></p><div id="levelGrid"></div></div></div>
+<div class="overlay" id="pauseOverlay"><div class="panel" style="max-width:420px;text-align:center"><h2>⏸ MISIÓN EN PAUSA</h2><p>La partida está detenida.</p><button id="resumeBtn" class="primary">CONTINUAR</button></div></div>
+<div class="overlay" id="resultOverlay"><div class="panel" style="max-width:500px;text-align:center"><h2 id="resultTitle">¡MISIÓN COMPLETADA!</h2><p id="resultText"></p><div class="progress"><span id="resultProgress"></span></div><button id="resultBtn" class="primary">SIGUIENTE NIVEL ➜</button></div></div>
+<div class="overlay" id="helpOverlay"><div class="panel"><div class="paneltop"><h2>📘 GUÍA DE LA BRIGADA</h2><button class="ghost close" data-close="helpOverlay">✕</button></div><p><b>Objetivo:</b> recoge tres paquetes de ayuda y llega al refugio.</p><p><b>Monedas:</b> recoge monedas para comprar mejoras en la tienda.</p><p><b>Rutas secretas:</b> busca el cofre dorado y consigue monedas extra.</p><p><b>Jefes de tormenta:</b> cada diez niveles debes acercarte al faro y activarlo tres veces con el botón verde o la tecla E. Esquiva las ráfagas de viento.</p><p><b>Mapa:</b> muestra los 100 niveles y tu avance. <b>Pausa:</b> detiene el juego. <b>Sonido:</b> activa o desactiva los efectos.</p><p><b>En la vida real:</b> nunca cruces cauces crecidos; busca zonas seguras y atiende las alertas oficiales.</p></div></div>
+<div id="startScreen"><div class="startbox">
+ <div style="font-size:32px">🌧️ 🌴 🏘️</div><h2>PIURA RESILIENTE</h2><div style="color:#9fe4d0;font-weight:bold;letter-spacing:2px">100 MISIONES · UNA REGIÓN QUE SE PREPARA</div>
+ <p class="lead">Acompaña a una brigada juvenil por Piura, Catacaos, el Bajo Piura, Talara, Sechura y el bosque seco. Reúne suministros, descubre rutas seguras y activa los faros de alerta para ayudar a las comunidades.</p>
+ <div class="features"><span class="feature">🎮 Plataformas retro</span><span class="feature">🪙 Tienda y mejoras</span><span class="feature">🌩️ Jefes cada 10 niveles</span><span class="feature">💾 Guardado automático</span></div>
+ <h3 style="color:#ffe29a;margin:8px">ELIGE TU PERSONAJE</h3><div class="characters" id="characterSelect">
+  <div class="charcard selected" data-char="killa"><canvas id="preview-killa" width="70" height="80"></canvas><b>Killa</b><small>Brigadista · equilibrada</small></div>
+  <div class="charcard" data-char="inti"><canvas id="preview-inti" width="70" height="80"></canvas><b>Inti</b><small>Agricultor · salto alto</small></div>
+  <div class="charcard" data-char="sami"><canvas id="preview-sami" width="70" height="80"></canvas><b>Sami</b><small>Salud · una vida extra</small></div>
+  <div class="charcard" data-char="tupac"><canvas id="preview-tupac" width="70" height="80"></canvas><b>Túpac</b><small>Técnico · imán inicial</small></div>
+ </div>
+ <button id="startBtn" class="primary" style="font-size:17px;padding:13px 25px">🚀 COMENZAR AVENTURA</button>
+ <p class="hint">Personajes y situaciones ficticios inspirados en la región norte del Perú.</p>
+</div></div>
+
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id),cv=$('game'),ctx=cv.getContext('2d'),W=960,H=540,WORLD=2160;
+const KEY='piuraResiliente_pro_v2';
+const zones=[
+ ['PIURA','La ciudad despierta','#94d9eb','#b58c5d','#785232','#5aa14d'],
+ ['CATACAOS','Calles de tradición','#e9c38e','#b98d5d','#8a603d','#78a650'],
+ ['BAJO PIURA','La ruta del agua','#a6cbd7','#8e9870','#72573d','#72a65a'],
+ ['TALARA','Costa y energía','#9acbd8','#a78d6d','#78634e','#779c5b'],
+ ['SECHURA','Desierto y oasis','#eed093','#c29b60','#997141','#93ad55'],
+ ['BOSQUE SECO','Guardianes del bosque','#afd0a5','#8c9c61','#704d32','#57944b'],
+ ['AYABACA','Caminos de altura','#a8c9d8','#6c987b','#6f583e','#64a15b'],
+ ['HUANCABAMBA','La sierra se organiza','#9dc8d7','#769a8a','#76553c','#6ba35b'],
+ ['PAITA','Puerto de esperanza','#9bcfdf','#b7a078','#806347','#70a253'],
+ ['GRAN FINAL','Una región preparada','#8dc9d7','#9e9c70','#76583c','#68a653']
+];
+const chars={
+ killa:{name:'Killa',color:'#24558b',shirt:'#e7bd42',hair:'#3a271c',jump:11.3,lives:3,magnet:false,hat:'#d8a83c'},
+ inti:{name:'Inti',color:'#9b592d',shirt:'#e0a83b',hair:'#2d211a',jump:13.4,lives:3,magnet:false,hat:'#39784d'},
+ sami:{name:'Sami',color:'#32866f',shirt:'#f0eee1',hair:'#2d211a',jump:11.3,lives:4,magnet:false,hat:'#e9eee8'},
+ tupac:{name:'Túpac',color:'#7250a0',shirt:'#e3bd47',hair:'#2b211b',jump:11.3,lives:3,magnet:true,hat:'#73519a'}
+};
+const products=[
+ {id:'shield',name:'Escudo impermeable',icon:'🛡️',price:45,desc:'Evita perder una vida una vez en el nivel.',type:'single'},
+ {id:'boots',name:'Botas de salto',icon:'🥾',price:55,desc:'Aumentan tu salto durante toda la campaña.',type:'upgrade'},
+ {id:'magnet',name:'Imán de monedas',icon:'🧲',price:60,desc:'Atrae monedas desde mayor distancia.',type:'upgrade'},
+ {id:'heart',name:'Vida adicional',icon:'❤️',price:70,desc:'Añade una vida inmediatamente.',type:'single'},
+ {id:'supply',name:'Paquete de ayuda',icon:'🎒',price:35,desc:'Completa un suministro pendiente del nivel.',type:'single'},
+ {id:'map',name:'Mapa de suministros',icon:'🗺️',price:40,desc:'Hace parpadear los paquetes pendientes.',type:'single'},
+ {id:'raincoat',name:'Traje de brigada',icon:'🧥',price:90,desc:'Desbloquea un uniforme especial.',type:'upgrade'}
+];
+let data={level:1,coins:0,best:1,character:'killa',upgrades:{boots:false,magnet:false,raincoat:false}};
+try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s)data={...data,...s,upgrades:{...data.upgrades,...(s.upgrades||{})}};}catch(e){}
+let level=data.level,coins=data.coins,best=data.best,character=data.character||'killa',selected='killa',lives=3,supplies=0,cam=0,started=false,paused=false,finished=false;
+let player={},platforms=[],pits=[],coinsOnMap=[],packs=[],rain=[],chest=null,boss=null,keys={},shieldAvailable=false,mapReveal=false,sound=true,audio=null,frame=0;
+const zIndex=()=>Math.min(9,Math.floor((level-1)/10)),zone=()=>zones[zIndex()],isBoss=()=>level%10===0;
+function persist(){data.level=level;data.coins=coins;data.best=best;data.character=character;localStorage.setItem(KEY,JSON.stringify(data));}
+function hud(){ $('uiLevel').textContent=level;$('uiCoins').textContent=coins;$('uiLives').textContent=lives;$('uiSupplies').textContent=supplies;$('uiBest').textContent=best;$('zoneLabel').textContent=`ZONA ${zIndex()+1} · ${zone()[0]}`;}
+function msg(t){$('toast').textContent=t;}
+function beep(f=520,d=.07){if(!sound)return;try{audio=audio||new(window.AudioContext||window.webkitAudioContext)();const o=audio.createOscillator(),g=audio.createGain();o.type='square';o.frequency.value=f;g.gain.value=.035;o.connect(g);g.connect(audio.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+d);o.stop(audio.currentTime+d);}catch(e){}}
+function newLevel(){
+ platforms=[{x:0,y:490,w:280,h:50},{x:360,y:490,w:240,h:50},{x:680,y:490,w:260,h:50},{x:1020,y:490,w:250,h:50},{x:1370,y:490,w:790,h:50}];pits=[];coinsOnMap=[];packs=[];supplies=0;cam=0;finished=false;shieldAvailable=!!data.upgrades.shield;mapReveal=false;
+ const diff=Math.floor((level-1)/10);
+ for(let i=0;i<10;i++){let x=155+i*185+(level%4)*7,y=390-(i%3)*35-(diff%3)*5;platforms.push({x,y,w:112+(i%2)*18,h:18});if(i%2===0)pits.push({x:x+121,y:490,w:50+Math.min(28,diff*3),h:50});}
+ [270,880,1550].forEach((x,i)=>packs.push({x:x+(level%3)*8,y:i===1?340:420-(i%2)*42,taken:false,reveal:false}));
+ for(let i=0;i<23;i++)coinsOnMap.push({x:100+i*88,y:440-(i%4)*32,taken:false});
+ chest={x:1150,y:302,found:false};
+ boss=isBoss()?{x:1740,y:270,phase:0,timer:0,charge:0,active:true}:null;
+ player={x:55,y:400,w:30,h:42,vx:0,vy:0,ground:false,invuln:0,anim:0};
+ rain=Array.from({length:65},()=>({x:Math.random()*W,y:Math.random()*H,v:2+Math.random()*4}));
+ hud();$('actionBtn').style.display=boss?'inline-block':'none';$('actionBtn').disabled=true;
+ msg(`${zone()[1]} · Misión ${level}. Reúne tres paquetes y alcanza el refugio.`);
+ persist();
+}
+function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),w,h);}
+function cloud(x,y,s=1,c='#6e8996'){rect(x,y+12*s,72*s,21*s,c);rect(x+13*s,y,39*s,25*s,c);rect(x+43*s,y+6*s,35*s,24*s,c);rect(x+20*s,y+4*s,20*s,6*s,'#8da6ae');}
+function bg(){
+ const z=zone();rect(0,0,W,H,z[2]);
+ // cielo con gradiente
+ let grad=ctx.createLinearGradient(0,0,0,H);grad.addColorStop(0,z[2]);grad.addColorStop(1,'#d9e5c7');rect(0,0,W,H,grad);
+ // sol filtrado
+ rect(800,72,44,44,'#ffe6a1');rect(808,64,28,8,'#fff0bd');
+ for(let i=0;i<7;i++){let x=((i*190-cam*.18)%(W+170)+W+170)%(W+170)-70;cloud(x,52+(i%3)*22,.8,i%2?'#728b98':'#8098a1');}
+ // cerros lejanos
+ ctx.fillStyle=z[3];ctx.beginPath();ctx.moveTo(0,330);for(let x=0;x<=W;x+=75)ctx.lineTo(x,235+Math.sin((x+cam*.12)/105)*34);ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.fill();
+ // cerros cercanos en parallax
+ ctx.fillStyle='#8b9369';ctx.beginPath();ctx.moveTo(0,390);for(let x=0;x<=W;x+=95)ctx.lineTo(x,305+Math.sin((x+cam*.23)/80)*27);ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.fill();
+ // casas detalladas y palmeras
+ for(let i=0;i<7;i++){let x=((i*245-cam*.42)%(W+250)+W+250)%(W+250)-70;
+  rect(x,307,68,60,i%2?'#dfcda8':'#d8a46c');rect(x-7,291,82,18,'#9d503b');rect(x+8,319,17,18,'#75a9b4');rect(x+43,319,15,48,'#6c4932');rect(x+41,317,19,4,'#d5b77e');
+  rect(x+96,265,9,102,'#79512f');rect(x+73,251,56,12,'#39774a');rect(x+82,238,43,12,'#468b50');rect(x+67,265,20,8,'#468b50');
+ }
+ // camino distante
+ rect(0,405,W,9,'#c3a16a');
+ // lluvia animada
+ ctx.strokeStyle='rgba(231,249,255,.72)';ctx.lineWidth=2;rain.forEach(r=>{ctx.beginPath();ctx.moveTo(r.x,r.y);ctx.lineTo(r.x-5,r.y+14);ctx.stroke();r.y+=r.v;if(r.y>H){r.y=-12;r.x=Math.random()*W;}});
+}
+function drawHero(){
+ const c=chars[character],x=player.x,y=player.y,walk=Math.abs(player.vx)>.1?Math.sin(frame*.22)*3:0;
+ // sombra
+ rect(x+3,y+41,25,3,'#243c38aa');
+ // legs / boots
+ rect(x+6,y+31,7,9,'#27384a');rect(x+18,y+31,7,9,'#27384a');rect(x+4,y+38+walk,11,4,'#3d3028');rect(x+17,y+38-walk,12,4,'#3d3028');
+ // body and arms
+ rect(x+5,y+14,21,20,c.color);rect(x+2,y+17,6,15,c.color);rect(x+25,y+17,6,15,c.color);
+ rect(x+7,y+15,17,5,c.shirt);rect(x+11,y+22,9,3,'#fff1c6');
+ // neck and head
+ rect(x+12,y+10,9,7,'#bd805e');rect(x+7,y-2,18,17,'#c98f6b');rect(x+9,y+1,3,3,'#fff0d8');rect(x+21,y+1,3,3,'#fff0d8');
+ rect(x+21,y+5,3,3,'#29221e');
+ // hair / cap
+ rect(x+6,y-5,21,6,c.hair);rect(x+5,y-2,4,8,c.hair);rect(x+23,y-2,4,7,c.hair);
+ rect(x+4,y-7,25,4,c.hat);rect(x+8,y-10,17,4,c.hat);
+ // backpack and insignia
+ rect(x+25,y+18,5,13,'#8b5932');rect(x+11,y+18,7,5,'#f7e7ad');
+ if(data.upgrades.raincoat){rect(x+4,y+13,25,4,'#f2c84f');}
+ if(shieldAvailable){ctx.strokeStyle='#8ceaff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x+15,y+19,29,0,Math.PI*2);ctx.stroke();}
+}
+function world(){
+ const z=zone();ctx.save();ctx.translate(-cam,0);
+ platforms.forEach(p=>{rect(p.x,p.y,p.w,p.h,z[4]);rect(p.x,p.y,p.w,9,z[5]);for(let k=0;k<p.w;k+=25)rect(p.x+k,p.y+14,13,3,'#5e402d');});
+ pits.forEach(p=>{rect(p.x,p.y,p.w,p.h,'#167eae');rect(p.x,p.y,p.w,5,'#9cecf2');rect(p.x+7,p.y+15,16,2,'#d5fbff');});
+ coinsOnMap.forEach(c=>{if(!c.taken){ctx.fillStyle='#ffdc4d';ctx.beginPath();ctx.arc(c.x,c.y,9,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#a66b16';ctx.lineWidth=3;ctx.stroke();rect(c.x-2,c.y-5,4,10,'#fff0a2');}});
+ packs.forEach(p=>{if(!p.taken){if(p.reveal||mapReveal){ctx.shadowColor='#fff36b';ctx.shadowBlur=22;}rect(p.x,p.y,27,26,'#f5e7c4');rect(p.x+5,p.y+5,17,16,'#25875d');rect(p.x+11,p.y+7,5,12,'#f6f2dc');rect(p.x+7,p.y+11,13,4,'#f6f2dc');ctx.shadowBlur=0;}});
+ if(chest&&!chest.found){ctx.shadowColor='#ffe66b';ctx.shadowBlur=18;rect(chest.x,chest.y,25,22,'#a85b28');rect(chest.x+3,chest.y+3,19,7,'#ffd54e');rect(chest.x+10,chest.y+10,5,9,'#f3d99a');ctx.shadowBlur=0;}
+ // meta: faro separado del refugio
+ rect(1980,374,105,116,'#f0e5c8');rect(1968,359,130,23,'#ad513d');rect(2020,425,27,65,'#285b82');rect(1990,391,19,17,'#8ec6d1');rect(2054,391,19,17,'#8ec6d1');
+ rect(1995,345,74,5,'#263b4b');ctx.fillStyle='#263b4b';ctx.font='bold 13px monospace';ctx.fillText(boss?'REFUGIO + FARO':'REFUGIO',1985,337);
+ if(boss&&boss.active){
+  const by=boss.y+Math.sin(frame*.06)*8;cloud(boss.x,by,1.08,'#536c80');
+  rect(boss.x+26,by+27,8,7,'#ffe16c');rect(boss.x+53,by+27,8,7,'#ffe16c');rect(boss.x+35,by+46,21,4,'#23394b');
+  rect(boss.x-2,by-16,86,8,'#102c43');rect(boss.x,by-14,Math.max(0,86-boss.charge*28),4,'#ffdb60');
+  ctx.fillStyle='#fff';ctx.font='bold 11px monospace';ctx.fillText('NUBE DE TORMENTA',boss.x-24,by-23);
+  if(boss.phase){rect(boss.x-90,by+65,70,9,'#9cecf4');rect(boss.x-100,by+77,90,5,'#d9fbff');}
+ }
+ drawHero();ctx.restore();
+}
+function hit(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;}
+function update(){
+ if(!started||paused||finished)return;frame++;
+ player.vx=(keys.ArrowRight||keys.d||keys.D?4.2:0)-(keys.ArrowLeft||keys.a||keys.A?4.2:0);
+ player.x=Math.max(0,Math.min(WORLD-player.w,player.x+player.vx));player.vy=Math.min(13,player.vy+.56);player.y+=player.vy;player.ground=false;
+ platforms.forEach(p=>{if(player.x+player.w>p.x&&player.x<p.x+p.w&&player.y+player.h>p.y&&player.y+player.h<p.y+25&&player.vy>=0){player.y=p.y-player.h;player.vy=0;player.ground=true;}});
+ if(player.invuln>0)player.invuln--;
+ const magnet=data.upgrades.magnet||chars[character].magnet;
+ coinsOnMap.forEach(c=>{if(!c.taken&&Math.hypot(player.x+15-c.x,player.y+20-c.y)<(magnet?90:22)){c.taken=true;coins+=5;hud();persist();beep(760,.05);}});
+ packs.forEach(p=>{if(!p.taken&&hit(player,{x:p.x,y:p.y,w:27,h:26})){p.taken=true;supplies++;hud();beep(620,.08);msg('¡Paquete de ayuda recogido!');}});
+ if(chest&&!chest.found&&hit(player,{x:chest.x,y:chest.y,w:25,h:22})){chest.found=true;coins+=25;hud();persist();beep(920,.12);msg('¡Cofre secreto! +25 monedas.');}
+ pits.forEach(p=>{if(hit(player,{x:p.x,y:p.y,w:p.w,h:24})&&player.y+player.h>p.y-6)hurt();});
+ if(player.y>H+15)hurt();
+ if(boss&&boss.active){
+  boss.timer++;if(boss.timer%190===0){boss.phase=1;msg('¡Ráfaga de viento! Salta o busca una plataforma.');}
+  if(boss.phase&&boss.timer%190>65)boss.phase=0;
+  if(boss.phase&&Math.abs(player.x-boss.x)<105&&player.y+player.h>boss.y+45)hurt();
+  const near=Math.abs(player.x-1980)<180&&supplies>=3;
+  $('actionBtn').disabled=!near;
+  if(near)msg('¡Acércate al faro y pulsa ACTIVAR FARO tres veces!');
+ }else $('actionBtn').disabled=true;
+ if(player.x>1970){
+  if(supplies<3)msg('Te faltan '+(3-supplies)+' paquetes de ayuda.');
+  else if(boss&&boss.active)msg('Activa el faro para completar esta misión.');
+  else complete();
+ }
+ cam=Math.max(0,Math.min(WORLD-W,player.x-330));
+}
+function hurt(){
+ if(player.invuln>0)return;
+ if(shieldAvailable){shieldAvailable=false;player.invuln=110;msg('¡Escudo impermeable activado! No perdiste una vida.');beep(440);return;}
+ lives--;hud();beep(170,.18);if(lives<=0){finished=true;result(false);return;}
+ player.x=Math.max(35,player.x-120);player.y=390;player.vy=0;player.invuln=110;msg('¡Cuidado! Perdiste una vida. Busca una ruta segura.');
+}
+function activateBeacon(){
+ if(!boss||!boss.active||Math.abs(player.x-1980)>180||supplies<3){msg('Para activar el faro: reúne 3 paquetes y acércate al refugio.');return;}
+ boss.charge++;beep(680,.1);
+ if(boss.charge>=3){boss.active=false;$('actionBtn').style.display='none';msg('¡FARO ACTIVADO! La comunidad recibió la alerta. Llega al refugio.');}
+ else msg('Faro activado '+boss.charge+'/3. ¡Continúa!');
+}
+function complete(){
+ finished=true;const reward=25+Math.floor(level/10)*5;coins+=reward;best=Math.max(best,Math.min(100,level+1));hud();persist();beep(880,.2);
+ $('resultTitle').textContent=level===100?'🏆 ¡CAMPAÑA COMPLETADA!':'⭐ ¡MISIÓN '+level+' SUPERADA!';
+ $('resultText').textContent=level===100?'¡Completaste las 100 misiones de Piura Resiliente! Tu brigada ayudó a las comunidades y promovió la prevención.':'¡Excelente trabajo, '+chars[character].name+'! Ganaste '+reward+' monedas. La brigada está lista para el siguiente desafío.';
+ $('resultProgress').style.width=level+'%';$('resultBtn').textContent=level===100?'VOLVER A JUGAR':'SIGUIENTE NIVEL ➜';$('resultOverlay').style.display='flex';
+}
+function result(){ $('resultTitle').textContent='💙 ¡PUEDES INTENTARLO DE NUEVO!';$('resultText').textContent='Te quedaste sin vidas. Revisa la tienda, mejora tu equipo y vuelve a intentarlo.';$('resultProgress').style.width=(level-1)+'%';$('resultBtn').textContent='REINTENTAR NIVEL';$('resultOverlay').style.display='flex';}
+function advance(){
+ $('resultOverlay').style.display='none';
+ if(lives<=0)lives=chars[character].lives;
+ if(level>=100){level=1;coins=0;best=1;data={level:1,coins:0,best:1,character,upgrades:{boots:false,magnet:false,raincoat:false}};}
+ else level++;
+ newLevel();persist();
+}
+function drawShop(){
+ $('shopBalance').textContent=coins;$('shopGrid').innerHTML='';
+ products.forEach(p=>{
+  const owned=p.id==='boots'?data.upgrades.boots:p.id==='magnet'?data.upgrades.magnet:p.id==='raincoat'?data.upgrades.raincoat:false;
+  const card=document.createElement('div');card.className='card';card.innerHTML=`<div style="font-size:25px">${p.icon}</div><h3>${p.name}</h3><p>${p.desc}</p><div class="price">🪙 ${p.price}${owned?' · ADQUIRIDO':''}</div><button>${owned&&p.type==='upgrade'?'COMPRADO':'COMPRAR'}</button>`;
+  const b=card.querySelector('button');b.disabled=coins<p.price||(owned&&p.type==='upgrade');b.onclick=()=>purchase(p);$('shopGrid').appendChild(card);
+ });
+}
+function purchase(p){
+ const owned=p.id==='boots'?data.upgrades.boots:p.id==='magnet'?data.upgrades.magnet:p.id==='raincoat'?data.upgrades.raincoat:false;
+ if(coins<p.price||(owned&&p.type==='upgrade'))return;
+ coins-=p.price;
+ if(p.id==='shield')shieldAvailable=true;
+ if(p.id==='boots')data.upgrades.boots=true;
+ if(p.id==='magnet')data.upgrades.magnet=true;
+ if(p.id==='heart')lives++;
+ if(p.id==='supply'){const pack=packs.find(x=>!x.taken);if(pack)pack.taken=true;supplies=Math.min(3,supplies+1);}
+ if(p.id==='map'){mapReveal=true;packs.forEach(x=>x.reveal=true);}
+ if(p.id==='raincoat')data.upgrades.raincoat=true;
+ hud();persist();drawShop();beep(700,.1);msg('¡Compra realizada! Equipo actualizado.');
+}
+function shopOpen(){if(!started||finished)return;paused=true;drawShop();$('shopOverlay').style.display='flex';}
+function mapOpen(){
+ if(!started)return;paused=true;const grid=$('levelGrid');grid.innerHTML='';
+ for(let i=1;i<=100;i++){const cell=document.createElement('div');cell.className='levelcell'+(i<level?' done':i===level?' now':'');cell.textContent=i;grid.appendChild(cell);}
+ $('mapProgress').style.width=((level-1)/100*100)+'%';$('mapCaption').textContent=`Misión ${level} de 100 · ${level-1}% completado.`;$('mapOverlay').style.display='flex';
+}
+function close(id){$(id).style.display='none';if(['shopOverlay','mapOverlay','pauseOverlay'].includes(id))paused=false;}
+function restart(){if(!started)return;newLevel();msg('Nivel reiniciado. ¡Vuelve a intentarlo!');}
+function draw(){bg();world();}
+function loop(){update();draw();requestAnimationFrame(loop);}
+function bindHold(id,key){const b=$(id);b.addEventListener('pointerdown',e=>{e.preventDefault();keys[key]=true;});['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>keys[key]=false));}
+bindHold('leftBtn','ArrowLeft');bindHold('rightBtn','ArrowRight');
+function jump(){if(player.ground&&!paused&&!finished){player.vy=chars[character].jump+(data.upgrades.boots?2:0);player.ground=false;beep(330,.05);}}
+$('jumpBtn').addEventListener('pointerdown',e=>{e.preventDefault();jump();});
+document.addEventListener('keydown',e=>{keys[e.key]=true;if([' ','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))e.preventDefault();if([' ','ArrowUp','w','W'].includes(e.key))jump();if(e.key==='e'||e.key==='E')activateBeacon();if(e.key==='Escape'&&started&&!finished){paused=!paused;$('pauseOverlay').style.display=paused?'flex':'none';}});
+document.addEventListener('keyup',e=>keys[e.key]=false);
+$('actionBtn').onclick=activateBeacon;
+$('startBtn').onclick=()=>{character=selected;data.character=character;lives=chars[character].lives;started=true;$('startScreen').style.display='none';newLevel();persist();};
+$('shopBtn').onclick=shopOpen;$('mapBtn').onclick=mapOpen;$('pauseBtn').onclick=()=>{if(started&&!finished){paused=true;$('pauseOverlay').style.display='flex';}};
+$('resumeBtn').onclick=()=>close('pauseOverlay');$('restartBtn').onclick=restart;$('resultBtn').onclick=advance;
+$('soundBtn').onclick=()=>{sound=!sound;$('soundBtn').textContent='🔊 SONIDO: '+(sound?'SÍ':'NO');if(sound)beep(600);};
+$('helpBtn2').onclick=()=>$('helpOverlay').style.display='flex';
+document.querySelectorAll('.close').forEach(b=>b.onclick=()=>close(b.dataset.close));
+document.querySelectorAll('.charcard').forEach(card=>card.onclick=()=>{document.querySelectorAll('.charcard').forEach(c=>c.classList.remove('selected'));card.classList.add('selected');selected=card.dataset.char;});
+function drawPreview(id,key){const c=$(id).getContext('2d'),p=chars[key];c.clearRect(0,0,70,80);c.fillStyle=p.color;c.fillRect(22,30,27,30);c.fillStyle=p.shirt;c.fillRect(25,31,21,8);c.fillStyle='#c98f6b';c.fillRect(27,14,19,18);c.fillStyle=p.hair;c.fillRect(25,11,23,7);c.fillRect(24,15,5,12);c.fillStyle=p.hat;c.fillRect(22,8,28,5);c.fillRect(27,4,18,5);c.fillStyle='#27384a';c.fillRect(26,59,8,12);c.fillRect(39,59,8,12);c.fillStyle='#49352a';c.fillRect(23,69,13,4);c.fillRect(37,69,13,4);c.fillStyle='#222';c.fillRect(41,22,3,3);}
+['killa','inti','sami','tupac'].forEach(k=>drawPreview('preview-'+k,k));
+newLevel();hud();loop();
+})();
+</script>
+</body>
+</html>
